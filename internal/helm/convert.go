@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	score "github.com/score-spec/score-go/types"
@@ -86,9 +87,6 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 		Values: values,
 	}
 
-	var service = map[string]interface{}{
-		"type": "ClusterIP",
-	}
 	if len(spec.Service.Ports) > 0 {
 		var ports = make([]interface{}, 0, len(spec.Service.Ports))
 		for name, port := range spec.Service.Ports {
@@ -104,9 +102,17 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 			}
 			ports = append(ports, pVals)
 		}
-		service["ports"] = ports
+
+		// NOTE: Sorting is necessary for DeepEqual call within our Unit Tests to work reliably
+		sort.Slice(ports, func(i, j int) bool {
+			return ports[i].(map[string]interface{})["name"].(string) < ports[j].(map[string]interface{})["name"].(string)
+		})
+		// END (NOTE)
+		dest["service"] = map[string]interface{}{
+			"type":  "ClusterIP",
+			"ports": ports,
+		}
 	}
-	dest["service"] = service
 
 	var containers = map[string]interface{}{}
 	for name, cSpec := range spec.Containers {
@@ -128,6 +134,12 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 				val = os.Expand(val, resourcesSpec.mapVar)
 				env = append(env, map[string]interface{}{"name": key, "value": val})
 			}
+
+			// NOTE: Sorting is necessary for DeepEqual call within our Unit Tests to work reliably
+			sort.Slice(env, func(i, j int) bool {
+				return env[i].(map[string]interface{})["name"].(string) < env[j].(map[string]interface{})["name"].(string)
+			})
+			// END (NOTE)
 			cVals["env"] = env
 		}
 

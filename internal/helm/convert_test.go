@@ -57,14 +57,14 @@ func TestScoreConvert(t *testing.T) {
 					"type": "ClusterIP",
 					"ports": []interface{}{
 						map[string]interface{}{
-							"name":       "www",
-							"port":       80,
-							"targetPort": 8080,
-						},
-						map[string]interface{}{
 							"name":     "admin",
 							"port":     8080,
 							"protocol": "UDP",
+						},
+						map[string]interface{}{
+							"name":       "www",
+							"port":       80,
+							"targetPort": 8080,
 						},
 					},
 				},
@@ -154,9 +154,6 @@ func TestScoreConvert(t *testing.T) {
 				},
 			},
 			Expected: map[string]interface{}{
-				"service": map[string]interface{}{
-					"type": "ClusterIP",
-				},
 				"containers": map[string]interface{}{
 					"backend": map[string]interface{}{
 						"image": map[string]interface{}{
@@ -164,20 +161,20 @@ func TestScoreConvert(t *testing.T) {
 						},
 						"env": []interface{}{
 							map[string]interface{}{
-								"name":  "DEBUG",
-								"value": "false", // fallback to default value
+								"name":  "CONNECTION_STRING",
+								"value": "postgresql://.:5432/test-db",
 							},
 							map[string]interface{}{
-								"name":  "LOGS_LEVEL",
-								"value": "${LOGS_LEVEL}", // do not expand escaped sequences, e.g. "$${..}"
+								"name":  "DEBUG",
+								"value": "false", // fallback to default value
 							},
 							map[string]interface{}{
 								"name":  "DOMAIN_NAME",
 								"value": "", // referenced property does not exist
 							},
 							map[string]interface{}{
-								"name":  "CONNECTION_STRING",
-								"value": "postgresql://.:5432/test-db",
+								"name":  "LOGS_LEVEL",
+								"value": "${LOGS_LEVEL}", // do not expand escaped sequences, e.g. "$${..}"
 							},
 						},
 						"volumeMounts": []interface{}{
