@@ -1,0 +1,51 @@
+#
+# Default values for the chart (for reference only).
+# An actual values file is rendered from the source SCORE file by the CLI tool.
+#
+
+# service:
+#   type: ClusterIP
+#   ports:
+#     - name: www
+#       protocol: TCP
+#       port: 80
+#       targetPort: 8080
+
+# containers:
+#   my-container:
+#     image:
+#       name: busybox:latest
+#     command: ["/bin/echo"]
+#     args: 
+#       - "-c"
+#       - "Hello $(FRIEND)"
+#     env:
+#       - name: "FRIEND"
+#         value: "World!"
+#     files:
+#       - target: etc/hello-world/config.yaml
+#         mode: "666"
+#         content: ${resources.env.APP_CONFIG}
+#     volumeMounts:
+#       - name: ${resources.data}
+#         subPath: sub/path
+#         mountPath: /mnt/data
+#         readOnly: true
+#     livenessProbe:
+#       httpGet:
+#         path: /health
+#         port: http
+#     readinessProbe:
+#       httpGet:
+#         path: /ready
+#         port: http
+#         httpHeaders:
+#           - name: Custom-Header
+#             value: Awesome
+#     resources:
+#       limits:
+#         cpu: 100m
+#         memory: 128Mi
+#       requests:
+#         cpu: 100m
+#         memory: 128Mi
