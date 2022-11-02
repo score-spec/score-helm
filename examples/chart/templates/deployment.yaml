@@ -25,9 +25,9 @@ spec:
           args:
             {{- toYaml $container.args | nindent 12 }}
           {{- end }}
-          {{- with $container.variables }}
+          {{- with $container.env }}
           env:
-            {{- toYaml $container.variables | nindent 12 }}
+            {{- toYaml $container.env | nindent 12 }}
           {{- end }}
           {{- with $container.volumeMounts }}
           volumeMounts:
