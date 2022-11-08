@@ -78,18 +78,6 @@ score-helm x.y.z
 
 The Score specification file resolves configuration inconsistencies between environments. Compose a `score.yaml` file that describes how to run your Workload. As a platform-agnostic declaration file, `score.yaml` creates a single source of truth on Workload profiles and works to integrate with any platform or tooling.
 
-## ![Manifesto](docs/images/manifesto.svg) Score manifesto
-
-- Enable local development without risk of configuration inconsistencies in remote environments.
-- Offer default configuration while allowing for a large degree of customization.
-- Establish a single source of truth for application configuration.
-- Separate environment specific from environment-agnostic configuration.
-- Enable environment-agnostic declaration of infrastructure dependencies.
-- Enable application centric rather than infrastructure-centric development.
-- Abstract away infrastructural complexity without sacrificing transparency.
-
-For more information, see the [Score manifesto](https://score.dev/manifesto).
-
 ## ![Get involved](docs/images/get-involved.svg) Get involved
 
 - Give the project a star!
