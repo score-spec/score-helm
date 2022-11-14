@@ -88,7 +88,7 @@ The Score specification file resolves configuration inconsistencies between envi
 
 ## ![Contributing](docs/images/contributing.svg) Contributing
 
-- Write a [blog](score.dev/blog).
+- Write a [blog](https://score.dev/blog).
 - Provide feedback on our [road map and releases board](https://github.com/orgs/score-spec/projects).
 - Contribute.
 

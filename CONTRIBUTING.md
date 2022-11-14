@@ -6,7 +6,7 @@ When contributing to this project, you must agree that you have authored the con
 
 ### **What do I need to know to help?**
 
-If you are looking to help to with a code contribution, our project uses Go Lang. If you don't feel ready to make a code contribution yet, no problem! You can also check out the documentation issues https://github.com/score-dev/demo-repository.
+If you are looking to help to with a code contribution, our project uses Go Lang. If you don't feel ready to make a code contribution yet, no problem! You can also check out the documentation issues https://github.com/score-spec/score-helm/issues.
 
 If you are interested in making a code contribution and would like to learn more about the technologies that we use, check out the list below.
 
@@ -64,7 +64,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 
 - Make sure that you are using the latest version.
 - Determine if your bug is really a bug and not an error on your side for example using incompatible environment components/versions (Make sure that you have read the [documentation](https://github.com/score-dev/docs). If you are looking for support.
-- To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug or error in the [bug tracker](https://github.com/score-dev/demo-repositoryissues?q=label%3Abug).
+- To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug.
 - Also make sure to search the internet (including Stack Overflow) to see if users outside the GitHub community have discussed the issue.
 - Collect information about the bug:
   - Stack trace (Traceback).
@@ -79,4 +79,4 @@ Our [Code of Conduct](CODE_OF_CONDUCT.md) means that you are responsible for tre
 
 ## Community Guidelines
 
-This project follows the [CNCF Community Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
+For information on our community guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
