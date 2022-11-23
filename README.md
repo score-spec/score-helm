@@ -2,81 +2,28 @@
 
 # ![Score](docs/images/logo.svg) Score overview
 
-_Score_ provides a developer-centric and platform-agnostic workload specification to improve developer productivity and experience. Score eliminates configuration inconsistencies between local and remote environments.
+Score aims to improve developer producticity and experience by reducing the risk of configurtaion inconsistencies between local and remote environments. It provides developer-centric workload specification (`score.yaml`) which captures a workloads runtime requirements in a platform-agnostic manner.
 
-The _Score implementation CLI_ is a conversion tool for application developers to generate an environment-specific configuration. With environment-specific parameters, The Score implementation tool can run your Workload in the target environment by generating the target platform's configuration file.
+The `score.yaml` specification file can be executed against a _Score Implementation CLI_, a conversion tool for application developers to generate environment specific configuration. In combination with environment specific parameters, the CLI tool can run your workload in the target environment by generating a platform-specific configuration file such as `docker-compose.yaml` or a Helm `values.yaml`. Learn more [here](https://github.com/score-spec/spec#-what-is-score).
 
 ## ![Installation](docs/images/install.svg) Installation
 
-### Step 1. Download
+To install `score-helm`, follow the instructions as described in our [installation guide](https://docs.score.dev/docs/get-started/install/).
 
-1. Open <https://github.com/score-spec/score-helm/releases> in your browser.
+## ![Get Started](docs/images/overview.svg) Get Started
 
-2. Find the current release by scrolling down and looking for the green tag that reads _Latest_.
-
-3. Download the latest compressed Tar file for your operating system.
-   1. The name will be something like `score-helm_x.y_osx-amd64.tar.gz`, where `x.y` is the release number, `osx` is the operating system.
-   2. By default, the tarball will be saved to your `~/Downloads` directory. If you choose to use a different location, you'll need to change that in the following steps.
-
-**Results** You should see something similar to the following output.
+If you already have a `score.yaml` file defined, you can simply run the following command:
 
 ```bash
-Saving to: `score-helm_x.y_osx-amd64.tar.gz`
-
-score-helm_x.y.0 100%[===================>]   2.85M  5.28MB/s    in 0.5s
+# Prepare a new Helm values file
+score-helm run -f ./score.yaml -o ./values.yaml
 ```
 
-#### Step 2: Install into your `local` directory
+- `run` tells the CLI to translate the Score file to a Helm values.yaml file.
+- `-f` is the path to the Score file.
+- `--env` specifies the path to the values.yaml file.
 
-In your terminal, enter the following to create the `score-spec` directory.
-
-```bash
-cd /usr/local/
-# create the directory if needed
-sudo mkdir -pv score-spec
-```
-
-Extract the compressed Tar file.
-
-```bash
-sudo tar -xvzf ~/Downloads/score-helm_0.1.0_darwin_arm64.tar.gz
-```
-
-**Results** You should see the following output.
-
-```bash
-x LICENSE
-x README.md
-x score-helm
-```
-
-### Step 3: Export PATH
-
-To export `PATH`, run the following command.
-
-```bash
-export PATH=$PATH:/usr/local/score-spec
-```
-
-### Step 4: Verify installation
-
-To verify installation, run the following command.
-
-```bash
-score-helm --version
-```
-
-The previous command returns the following output.
-
-```bash
-score-helm x.y.z
-```
-
-**Results** You've successfully installed the Score implementation CLI.
-
-## ![Overview](docs/images/overview.svg) Overview
-
-The Score specification file resolves configuration inconsistencies between environments. Compose a `score.yaml` file that describes how to run your Workload. As a platform-agnostic declaration file, `score.yaml` creates a single source of truth on Workload profiles and works to integrate with any platform or tooling.
+If you're just getting started, follow [this guide](https://docs.score.dev/docs/get-started/score-helm-hello-world/) to run your first Hello World program with `score-helm`.
 
 ## ![Get involved](docs/images/get-involved.svg) Get involved
 
@@ -88,8 +35,8 @@ The Score specification file resolves configuration inconsistencies between envi
 
 ## ![Contributing](docs/images/contributing.svg) Contributing
 
-- Write a [blog](https://score.dev/blog).
-- Provide feedback on our [road map and releases board](https://github.com/orgs/score-spec/projects).
+- Write a [blog post](https://score.dev/blog).
+- Provide feedback on our [road map and releases board](https://github.com/score-spec/spec/blob/main/roadmap.md#get-involved).
 - Contribute.
 
 Contributions are what make the open-source community such a wonderful place to learn, inspire, and create. Any contributions you make are greatly appreciated.
@@ -104,10 +51,18 @@ If you have a suggestion that would improve this, please fork the repo and creat
 
 Read [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
-## ![License](docs/images/license.svg) License
+### Documentation
+
+You can find our documentation at [docs.score.dev](https://docs.score.dev/docs).
+
+### Roadmap
+
+See [Roadmap](https://github.com/score-spec/spec/blob/main/roadmap.md). You can [submit an idea](https://github.com/score-spec/spec/blob/main/roadmap.md#get-involved) anytime.
+
+### License
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## ![Code of conduct](docs/images/code-of-conduct.svg) Code of conduct
+### Code of conduct
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
