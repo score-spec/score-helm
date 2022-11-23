@@ -19,9 +19,9 @@ If you already have a `score.yaml` file defined, you can simply run the followin
 score-helm run -f ./score.yaml -o ./values.yaml
 ```
 
-- `run` tells the CLI to translate the Score file to a Helm values.yaml file.
+- `run` tells the CLI to translate the Score file to a Helm `values.yaml` file.
 - `-f` is the path to the Score file.
-- `--env` specifies the path to the values.yaml file.
+- `--env` specifies the path to the `values.yaml` file.
 
 If you're just getting started, follow [this guide](https://docs.score.dev/docs/get-started/score-helm-hello-world/) to run your first Hello World program with `score-helm`.
 
