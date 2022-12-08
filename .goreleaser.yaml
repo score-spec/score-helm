@@ -5,7 +5,7 @@ before:
 builds:
   - id: score-helm
     binary: score-helm
-    main: ./cli
+    main: ./cmd/score-helm
     ldflags:
       - -X github.com/score-spec/score-helm/internal/version.Version={{ .Version }}
       - -X github.com/score-spec/score-helm/internal/version.BuildTime={{ .CommitDate }}

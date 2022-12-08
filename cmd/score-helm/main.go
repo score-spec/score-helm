@@ -11,12 +11,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/score-spec/score-helm/cli/cmd"
+	"github.com/score-spec/score-helm/internal/command"
 )
 
 func main() {
 
-	if err := cmd.Execute(); err != nil {
+	if err := command.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
