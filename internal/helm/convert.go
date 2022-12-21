@@ -9,56 +9,10 @@ package helm
 
 import (
 	"fmt"
-	"os"
-	"regexp"
 	"sort"
-	"strings"
 
 	score "github.com/score-spec/score-go/types"
 )
-
-// resourceRefRegex extracts the resource ID from the resource reference: '${resources.RESOURCE_ID}'
-var resourceRefRegex = regexp.MustCompile(`\${resources\.(.+)}`)
-
-// resourcesMap is an internal utility type to group some helper methods.
-type resourcesMap struct {
-	Spec   map[string]score.ResourceSpec
-	Values map[string]interface{}
-}
-
-// mapResourceVar maps resources properties references.
-// Returns an empty string if the reference can't be resolved.
-func (r resourcesMap) mapVar(ref string) string {
-	if ref == "$" {
-		return ref
-	}
-
-	var segments = strings.SplitN(ref, ".", 3)
-	if segments[0] != "resources" || len(segments) != 3 {
-		return ""
-	}
-
-	var resName = segments[1]
-	var propName = segments[2]
-	if res, ok := r.Spec[resName]; ok {
-		if prop, ok := res.Properties[propName]; ok {
-
-			// Look-up the value for the property
-			if src, ok := r.Values[resName]; ok {
-				if srcMap, ok := src.(map[string]interface{}); ok {
-					if val, ok := srcMap[propName]; ok {
-						return fmt.Sprintf("%v", val)
-					}
-				}
-			}
-
-			// Use the default value provided (if any)
-			return fmt.Sprintf("%v", prop.Default)
-		}
-	}
-
-	return ""
-}
 
 // getProbeDetails extracts an httpGet probe details from the source spec.
 // Returns nil if the source spec is empty.
@@ -89,9 +43,9 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 	if values == nil {
 		values = make(map[string]interface{})
 	}
-	var resourcesSpec = resourcesMap{
-		Spec:   spec.Resources,
-		Values: values,
+	context, err := buildContext(spec.Metadata, spec.Resources, values)
+	if err != nil {
+		return fmt.Errorf("preparing context: %w", err)
 	}
 
 	if len(spec.Service.Ports) > 0 {
@@ -138,7 +92,7 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 		if len(cSpec.Variables) > 0 {
 			var env = make([]interface{}, 0, len(cSpec.Variables))
 			for key, val := range cSpec.Variables {
-				val = os.Expand(val, resourcesSpec.mapVar)
+				val = context.Substitute(val)
 				env = append(env, map[string]interface{}{"name": key, "value": val})
 			}
 
@@ -153,7 +107,7 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 		if len(cSpec.Volumes) > 0 {
 			var volumes = make([]interface{}, 0, len(cSpec.Volumes))
 			for _, vol := range cSpec.Volumes {
-				var source = resourceRefRegex.ReplaceAllString(vol.Source, "$1")
+				var source = context.Substitute(vol.Source)
 				var vVals = map[string]interface{}{
 					"name":      source,
 					"subPath":   vol.Path,
