@@ -24,7 +24,6 @@ import (
 	loader "github.com/score-spec/score-go/loader"
 	score "github.com/score-spec/score-go/types"
 	helm "github.com/score-spec/score-helm/internal/helm"
-	utils "github.com/score-spec/score-helm/internal/utils"
 )
 
 const (
@@ -124,7 +123,11 @@ func run(cmd *cobra.Command, args []string) error {
 			}
 		} else {
 			var path = pmap[0]
-			var val = utils.TryParseJsonValue(pmap[1])
+			var val interface{}
+			if err := yaml.Unmarshal([]byte(pmap[1]), &val); err != nil {
+				val = pmap[1]
+			}
+
 			log.Printf("overriding '%s' = '%s'", path, val)
 			if jsonBytes, err = sjson.SetBytes(jsonBytes, path, val); err != nil {
 				return fmt.Errorf("overriding '%s': %w", path, err)
