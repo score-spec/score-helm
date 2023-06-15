@@ -123,25 +123,12 @@ func TestScoreConvert(t *testing.T) {
 				Resources: map[string]score.ResourceSpec{
 					"env": {
 						Type: "environment",
-						Properties: map[string]score.ResourcePropertySpec{
-							"DEBUG":      {Default: false, Required: false},
-							"LOGS_LEVEL": {Default: "WARN", Required: false},
-						},
 					},
 					"app-db": {
-						Properties: map[string]score.ResourcePropertySpec{
-							"host":      {Default: "localhost", Required: true},
-							"port":      {Default: 5432, Required: false},
-							"name":      {Required: true},
-							"user.name": {Required: true, Secret: true},
-							"password":  {Required: true, Secret: true},
-						},
+						Type: "posgres",
 					},
 					"dns": {
 						Type: "dns",
-						Properties: map[string]score.ResourcePropertySpec{
-							"domain": {Required: false},
-						},
 					},
 					"data": {
 						Type: "volume",
@@ -173,7 +160,7 @@ func TestScoreConvert(t *testing.T) {
 							},
 							map[string]interface{}{
 								"name":  "DEBUG",
-								"value": "false", // fallback to default value
+								"value": "", // fallback to default value
 							},
 							map[string]interface{}{
 								"name":  "DOMAIN_NAME",
