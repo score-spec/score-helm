@@ -125,7 +125,7 @@ func TestScoreConvert(t *testing.T) {
 						Type: "environment",
 					},
 					"app-db": {
-						Type: "posgres",
+						Type: "postgres",
 					},
 					"dns": {
 						Type: "dns",
