@@ -14,7 +14,7 @@ import (
 	assert "github.com/stretchr/testify/assert"
 )
 
-func TestBuildContext(t *testing.T) {
+func TestMapVar(t *testing.T) {
 	var meta = score.WorkloadMeta{
 		Name: "test-name",
 	}
@@ -22,23 +22,12 @@ func TestBuildContext(t *testing.T) {
 	var resources = score.ResourcesSpecs{
 		"env": score.ResourceSpec{
 			Type: "environment",
-			Properties: map[string]score.ResourcePropertySpec{
-				"DEBUG": {Required: false, Default: true},
-			},
 		},
 		"db": score.ResourceSpec{
 			Type: "postgres",
-			Properties: map[string]score.ResourcePropertySpec{
-				"host": {Required: true, Default: "."},
-				"port": {Required: true, Default: "5342"},
-				"name": {Required: true},
-			},
 		},
 		"dns": score.ResourceSpec{
 			Type: "dns",
-			Properties: map[string]score.ResourcePropertySpec{
-				"domain": {},
-			},
 		},
 	}
 
@@ -55,38 +44,6 @@ func TestBuildContext(t *testing.T) {
 	context, err := buildContext(meta, resources, values)
 	assert.NoError(t, err)
 
-	assert.Equal(t, templatesContext{
-		"metadata.name": "test-name",
-
-		"resources.env":       "env",
-		"resources.env.DEBUG": "true",
-
-		"resources.db":      "db",
-		"resources.db.host": "localhost",
-		"resources.db.port": "5342",
-		"resources.db.name": "test-db",
-
-		"resources.dns":        "dns",
-		"resources.dns.domain": "test.domain.name",
-	}, context)
-}
-
-func TestMapVar(t *testing.T) {
-	var context = templatesContext{
-		"metadata.name": "test-name",
-
-		"resources.env":       "env",
-		"resources.env.DEBUG": "true",
-
-		"resources.db":      "db",
-		"resources.db.host": "localhost",
-		"resources.db.port": "5342",
-		"resources.db.name": "test-db",
-
-		"resources.dns":        "shared.dns",
-		"resources.dns.domain": "test.domain.name",
-	}
-
 	assert.Equal(t, "", context.mapVar(""))
 	assert.Equal(t, "$", context.mapVar("$"))
 
@@ -94,11 +51,11 @@ func TestMapVar(t *testing.T) {
 	assert.Equal(t, "", context.mapVar("metadata.name.nil"))
 	assert.Equal(t, "", context.mapVar("metadata.nil"))
 
-	assert.Equal(t, "true", context.mapVar("resources.env.DEBUG"))
+	assert.Equal(t, "", context.mapVar("resources.env.DEBUG"))
 
 	assert.Equal(t, "db", context.mapVar("resources.db"))
 	assert.Equal(t, "localhost", context.mapVar("resources.db.host"))
-	assert.Equal(t, "5342", context.mapVar("resources.db.port"))
+	assert.Equal(t, "", context.mapVar("resources.db.port"))
 	assert.Equal(t, "test-db", context.mapVar("resources.db.name"))
 	assert.Equal(t, "", context.mapVar("resources.db.name.nil"))
 	assert.Equal(t, "", context.mapVar("resources.db.nil"))
@@ -107,20 +64,34 @@ func TestMapVar(t *testing.T) {
 }
 
 func TestSubstitute(t *testing.T) {
-	var context = templatesContext{
-		"metadata.name": "test-name",
-
-		"resources.env":       "env",
-		"resources.env.DEBUG": "true",
-
-		"resources.db":      "db",
-		"resources.db.host": "localhost",
-		"resources.db.port": "5342",
-		"resources.db.name": "test-db",
-
-		"resources.dns":        "dns",
-		"resources.dns.domain": "test.domain.name",
+	var meta = score.WorkloadMeta{
+		Name: "test-name",
 	}
+
+	var resources = score.ResourcesSpecs{
+		"env": score.ResourceSpec{
+			Type: "environment",
+		},
+		"db": score.ResourceSpec{
+			Type: "postgres",
+		},
+		"dns": score.ResourceSpec{
+			Type: "dns",
+		},
+	}
+
+	var values = map[string]interface{}{
+		"db": map[string]interface{}{
+			"host": "localhost",
+			"name": "test-db",
+		},
+		"dns": map[string]interface{}{
+			"domain": "test.domain.name",
+		},
+	}
+
+	context, err := buildContext(meta, resources, values)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "", context.Substitute(""))
 	assert.Equal(t, "abc", context.Substitute("abc"))
@@ -130,10 +101,10 @@ func TestSubstitute(t *testing.T) {
 	assert.Equal(t, "The name is 'test-name'", context.Substitute("The name is '${metadata.name}'"))
 	assert.Equal(t, "The name is ''", context.Substitute("The name is '${metadata.nil}'"))
 
-	assert.Equal(t, "resources.env.DEBUG", context.Substitute("resources.env.DEBUG"))
+	assert.Equal(t, "resources.badref.DEBUG", context.Substitute("resources.badref.DEBUG"))
 
 	assert.Equal(t, "db", context.Substitute("${resources.db}"))
 	assert.Equal(t,
-		"postgresql://:@localhost:5342/test-db",
+		"postgresql://:@localhost:/test-db",
 		context.Substitute("postgresql://${resources.db.user}:${resources.db.password}@${resources.db.host}:${resources.db.port}/${resources.db.name}"))
 }

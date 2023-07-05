@@ -21,10 +21,6 @@ containers:
 resources:
   env:
     type: environment
-    properties:
-      NAME:
-        type: string
-        default: World
 ```
 
 If there is a need to set the `NAME` variable value for the environment the workload would be deployed into, an `env.yaml` file can be used:

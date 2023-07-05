@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -18,12 +19,14 @@ import (
 )
 
 // templatesContext ia an utility type that provides a context for '${...}' templates substitution
-type templatesContext map[string]string
+type templatesContext struct {
+	meta      map[string]interface{}
+	resources score.ResourcesSpecs
+	values    map[string]interface{}
+}
 
 // buildContext initializes a new templatesContext instance
-func buildContext(metadata score.WorkloadMeta, resources score.ResourcesSpecs, values map[string]interface{}) (templatesContext, error) {
-	var ctx = make(map[string]string)
-
+func buildContext(metadata score.WorkloadMeta, resources score.ResourcesSpecs, values map[string]interface{}) (*templatesContext, error) {
 	var metadataMap = make(map[string]interface{})
 	if decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "json",
@@ -32,51 +35,23 @@ func buildContext(metadata score.WorkloadMeta, resources score.ResourcesSpecs, v
 		return nil, err
 	} else {
 		decoder.Decode(metadata)
-		for key, val := range metadataMap {
-			var ref = fmt.Sprintf("metadata.%s", key)
-			if _, exists := ctx[ref]; exists {
-				return nil, fmt.Errorf("ambiguous property reference '%s'", ref)
-			}
-			ctx[ref] = fmt.Sprintf("%v", val)
-		}
 	}
 
-	for resName, res := range resources {
-		ctx[fmt.Sprintf("resources.%s", resName)] = resName
-
-		for propName, prop := range res.Properties {
-			var ref = fmt.Sprintf("resources.%s.%s", resName, propName)
-			if _, exists := ctx[ref]; exists {
-				return nil, fmt.Errorf("ambiguous property reference '%s'", ref)
-			}
-
-			// Use the default value provided (if any)
-			var val = fmt.Sprintf("%v", prop.Default)
-
-			// Override the default value for the property (if provided)
-			if src, ok := values[resName]; ok {
-				if srcMap, ok := src.(map[string]interface{}); ok {
-					if v, ok := srcMap[propName]; ok {
-						val = fmt.Sprintf("%v", v)
-					}
-				}
-			}
-
-			ctx[ref] = val
-		}
-	}
-
-	return ctx, nil
+	return &templatesContext{
+		meta:      metadataMap,
+		resources: resources,
+		values:    values,
+	}, nil
 }
 
 // Substitute replaces all matching '${...}' templates in a source string
-func (context templatesContext) Substitute(src string) string {
-	return os.Expand(src, context.mapVar)
+func (ctx *templatesContext) Substitute(src string) string {
+	return os.Expand(src, ctx.mapVar)
 }
 
 // MapVar replaces objects and properties references with corresponding values
 // Returns an empty string if the reference can't be resolved
-func (context templatesContext) mapVar(ref string) string {
+func (ctx *templatesContext) mapVar(ref string) string {
 	if ref == "" {
 		return ""
 	}
@@ -90,10 +65,40 @@ func (context templatesContext) mapVar(ref string) string {
 		return ref
 	}
 
-	if res, ok := context[ref]; ok {
-		return res
+	var segments = strings.SplitN(ref, ".", 2)
+	switch segments[0] {
+	case "metadata":
+		if len(segments) == 2 {
+			if val, exists := ctx.meta[segments[1]]; exists {
+				return fmt.Sprintf("%v", val)
+			}
+		}
+
+	case "resources":
+		if len(segments) == 2 {
+			segments = strings.SplitN(segments[1], ".", 2)
+			var resName = segments[0]
+			if _, exists := ctx.resources[resName]; exists {
+				if len(segments) == 1 {
+					return resName
+				} else {
+					var propName = segments[1]
+
+					var val = ""
+					if src, ok := ctx.values[resName]; ok {
+						if srcMap, ok := src.(map[string]interface{}); ok {
+							if v, ok := srcMap[propName]; ok {
+								val = fmt.Sprintf("%v", v)
+							}
+						}
+					}
+
+					return val
+				}
+			}
+		}
 	}
 
-	log.Printf("Warning: Can not resolve '%s'. Resource or property is not declared.", ref)
+	log.Printf("Warning: Can not resolve '%s' reference.", ref)
 	return ""
 }
