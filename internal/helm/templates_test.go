@@ -95,6 +95,7 @@ func TestSubstitute(t *testing.T) {
 
 	assert.Equal(t, "", context.Substitute(""))
 	assert.Equal(t, "abc", context.Substitute("abc"))
+	assert.Equal(t, "$abc", context.Substitute("$abc"))
 	assert.Equal(t, "abc $ abc", context.Substitute("abc $$ abc"))
 	assert.Equal(t, "${abc}", context.Substitute("$${abc}"))
 
