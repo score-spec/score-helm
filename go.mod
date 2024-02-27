@@ -1,11 +1,13 @@
 module github.com/score-spec/score-helm
 
-go 1.19
+go 1.22
+
+toolchain go1.22.0
 
 require (
 	github.com/imdario/mergo v0.3.13
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/score-spec/score-go v0.0.0-20230905115428-131acdd2f5cf
+	github.com/score-spec/score-go v1.1.0
 	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tidwall/sjson v1.2.5

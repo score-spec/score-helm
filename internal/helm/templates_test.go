@@ -15,18 +15,18 @@ import (
 )
 
 func TestMapVar(t *testing.T) {
-	var meta = score.WorkloadMeta{
-		Name: "test-name",
+	var meta = score.WorkloadMetadata{
+		"name": "test-name",
 	}
 
-	var resources = score.ResourcesSpecs{
-		"env": score.ResourceSpec{
+	var resources = score.WorkloadResources{
+		"env": score.Resource{
 			Type: "environment",
 		},
-		"db": score.ResourceSpec{
+		"db": score.Resource{
 			Type: "postgres",
 		},
-		"dns": score.ResourceSpec{
+		"dns": score.Resource{
 			Type: "dns",
 		},
 	}
@@ -64,18 +64,18 @@ func TestMapVar(t *testing.T) {
 }
 
 func TestSubstitute(t *testing.T) {
-	var meta = score.WorkloadMeta{
-		Name: "test-name",
+	var meta = score.WorkloadMetadata{
+		"name": "test-name",
 	}
 
-	var resources = score.ResourcesSpecs{
-		"env": score.ResourceSpec{
+	var resources = score.WorkloadResources{
+		"env": score.Resource{
 			Type: "environment",
 		},
-		"db": score.ResourceSpec{
+		"db": score.Resource{
 			Type: "postgres",
 		},
-		"dns": score.ResourceSpec{
+		"dns": score.Resource{
 			Type: "dns",
 		},
 	}

@@ -25,12 +25,12 @@ var (
 // templatesContext ia an utility type that provides a context for '${...}' templates substitution
 type templatesContext struct {
 	meta      map[string]interface{}
-	resources score.ResourcesSpecs
+	resources score.WorkloadResources
 	values    map[string]interface{}
 }
 
 // buildContext initializes a new templatesContext instance
-func buildContext(metadata score.WorkloadMeta, resources score.ResourcesSpecs, values map[string]interface{}) (*templatesContext, error) {
+func buildContext(metadata score.WorkloadMetadata, resources score.WorkloadResources, values map[string]interface{}) (*templatesContext, error) {
 	var metadataMap = make(map[string]interface{})
 	if decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "json",
