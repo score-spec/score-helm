@@ -16,21 +16,23 @@ import (
 
 // getProbeDetails extracts an httpGet probe details from the source spec.
 // Returns nil if the source spec is empty.
-func getProbeDetails(probe *score.ContainerProbeSpec) map[string]interface{} {
-	if probe.HTTPGet.Path == "" {
+func getProbeDetails(probe *score.ContainerProbe) map[string]interface{} {
+	if probe.HttpGet.Path == "" {
 		return nil
 	}
 
 	var res = map[string]interface{}{
 		"type": "http",
-		"path": probe.HTTPGet.Path,
-		"port": probe.HTTPGet.Port,
+		"path": probe.HttpGet.Path,
+		"port": probe.HttpGet.Port,
 	}
 
-	if len(probe.HTTPGet.HTTPHeaders) > 0 {
+	if len(probe.HttpGet.HttpHeaders) > 0 {
 		var hdrs = map[string]string{}
-		for _, hdr := range probe.HTTPGet.HTTPHeaders {
-			hdrs[hdr.Name] = hdr.Value
+		for _, hdr := range probe.HttpGet.HttpHeaders {
+			if hdr.Name != nil && hdr.Value != nil {
+				hdrs[*hdr.Name] = *hdr.Value
+			}
 		}
 		res["httpHeaders"] = hdrs
 	}
@@ -39,7 +41,7 @@ func getProbeDetails(probe *score.ContainerProbeSpec) map[string]interface{} {
 }
 
 // ConvertSpec converts SCORE specification into Helm values map.
-func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values map[string]interface{}) error {
+func ConvertSpec(dest map[string]interface{}, spec *score.Workload, values map[string]interface{}) error {
 	if values == nil {
 		values = make(map[string]interface{})
 	}
@@ -48,18 +50,18 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 		return fmt.Errorf("preparing context: %w", err)
 	}
 
-	if len(spec.Service.Ports) > 0 {
+	if spec.Service != nil && len(spec.Service.Ports) > 0 {
 		var ports = make([]interface{}, 0, len(spec.Service.Ports))
 		for name, port := range spec.Service.Ports {
 			var pVals = map[string]interface{}{
 				"name": name,
 				"port": port.Port,
 			}
-			if port.Protocol != "" {
-				pVals["protocol"] = port.Protocol
+			if port.Protocol != nil {
+				pVals["protocol"] = string(*port.Protocol)
 			}
-			if port.TargetPort > 0 {
-				pVals["targetPort"] = port.TargetPort
+			if port.TargetPort != nil {
+				pVals["targetPort"] = *port.TargetPort
 			}
 			ports = append(ports, pVals)
 		}
@@ -110,32 +112,56 @@ func ConvertSpec(dest map[string]interface{}, spec *score.WorkloadSpec, values m
 				var source = context.Substitute(vol.Source)
 				var vVals = map[string]interface{}{
 					"name":      source,
-					"subPath":   vol.Path,
 					"mountPath": vol.Target,
-					"readOnly":  vol.ReadOnly,
+				}
+				if vol.Path != nil {
+					vVals["subPath"] = *vol.Path
+				}
+				if vol.ReadOnly != nil {
+					vVals["readOnly"] = *vol.ReadOnly
 				}
 				volumes = append(volumes, vVals)
 			}
 			cVals["volumeMounts"] = volumes
 		}
 
-		if probe := getProbeDetails(&cSpec.LivenessProbe); len(probe) > 0 {
-			cVals["livenessProbe"] = probe
+		if cSpec.LivenessProbe != nil {
+			if probe := getProbeDetails(cSpec.LivenessProbe); len(probe) > 0 {
+				cVals["livenessProbe"] = probe
+			}
 		}
-		if probe := getProbeDetails(&cSpec.ReadinessProbe); len(probe) > 0 {
-			cVals["readinessProbe"] = probe
-		}
-
-		if len(cSpec.Resources.Requests) > 0 || len(cSpec.Resources.Limits) > 0 {
-			cVals["resources"] = map[string]interface{}{
-				"requests": cSpec.Resources.Requests,
-				"limits":   cSpec.Resources.Limits,
+		if cSpec.ReadinessProbe != nil {
+			if probe := getProbeDetails(cSpec.ReadinessProbe); len(probe) > 0 {
+				cVals["readinessProbe"] = probe
 			}
 		}
 
+		if cSpec.Resources != nil {
+			containerResources := make(map[string]interface{})
+			if out := getContainerResources(cSpec.Resources.Limits); len(out) > 0 {
+				containerResources["limits"] = out
+			}
+			if out := getContainerResources(cSpec.Resources.Requests); len(out) > 0 {
+				containerResources["requests"] = out
+			}
+			if len(containerResources) > 0 {
+				cVals["resources"] = containerResources
+			}
+		}
 		containers[name] = cVals
 	}
 	dest["containers"] = containers
 
 	return nil
+}
+
+func getContainerResources(requests *score.ResourcesLimits) map[string]interface{} {
+	out := make(map[string]interface{})
+	if requests.Cpu != nil {
+		out["cpu"] = *requests.Cpu
+	}
+	if requests.Memory != nil {
+		out["memory"] = *requests.Memory
+	}
+	return out
 }

@@ -17,7 +17,7 @@ import (
 func TestScoreConvert(t *testing.T) {
 	var tests = []struct {
 		Name     string
-		Spec     *score.WorkloadSpec
+		Spec     *score.Workload
 		Values   map[string]interface{}
 		Expected map[string]interface{}
 		Error    error
@@ -26,24 +26,24 @@ func TestScoreConvert(t *testing.T) {
 		//
 		{
 			Name: "Should convert SCORE to Helm values",
-			Spec: &score.WorkloadSpec{
-				Metadata: score.WorkloadMeta{
-					Name: "test",
+			Spec: &score.Workload{
+				Metadata: score.WorkloadMetadata{
+					"name": "test",
 				},
-				Service: score.ServiceSpec{
-					Ports: score.ServicePortsSpecs{
-						"www": score.ServicePortSpec{
+				Service: &score.WorkloadService{
+					Ports: score.WorkloadServicePorts{
+						"www": score.ServicePort{
 							Port:       80,
-							TargetPort: 8080,
+							TargetPort: Ref(8080),
 						},
-						"admin": score.ServicePortSpec{
+						"admin": score.ServicePort{
 							Port:     8080,
-							Protocol: "UDP",
+							Protocol: Ref(score.ServicePortProtocolUDP),
 						},
 					},
 				},
-				Containers: score.ContainersSpecs{
-					"backend": score.ContainerSpec{
+				Containers: score.WorkloadContainers{
+					"backend": score.Container{
 						Image: "busybox",
 						Command: []string{
 							"/bin/sh",
@@ -97,12 +97,12 @@ func TestScoreConvert(t *testing.T) {
 		},
 		{
 			Name: "Should convert all resources references",
-			Spec: &score.WorkloadSpec{
-				Metadata: score.WorkloadMeta{
-					Name: "test",
+			Spec: &score.Workload{
+				Metadata: score.WorkloadMetadata{
+					"name": "test",
 				},
-				Containers: score.ContainersSpecs{
-					"backend": score.ContainerSpec{
+				Containers: score.WorkloadContainers{
+					"backend": score.Container{
 						Image: "busybox",
 						Variables: map[string]string{
 							"DEBUG":             "${resources.env.DEBUG}",
@@ -110,17 +110,17 @@ func TestScoreConvert(t *testing.T) {
 							"DOMAIN_NAME":       "${resources.dns.domain_name}",
 							"CONNECTION_STRING": "postgresql://${resources.app-db.host}:${resources.app-db.port}/${resources.app-db.name}",
 						},
-						Volumes: []score.VolumeMountSpec{
+						Volumes: []score.ContainerVolumesElem{
 							{
 								Source:   "${resources.data}",
-								Path:     "sub/path",
+								Path:     Ref("sub/path"),
 								Target:   "/mnt/data",
-								ReadOnly: true,
+								ReadOnly: Ref(true),
 							},
 						},
 					},
 				},
-				Resources: map[string]score.ResourceSpec{
+				Resources: score.WorkloadResources{
 					"env": {
 						Type: "environment",
 					},

@@ -24,6 +24,7 @@ import (
 	loader "github.com/score-spec/score-go/loader"
 	schema "github.com/score-spec/score-go/schema"
 	score "github.com/score-spec/score-go/types"
+
 	helm "github.com/score-spec/score-helm/internal/helm"
 )
 
@@ -62,9 +63,14 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Translate SCORE file into Helm values file",
 	RunE:  run,
+	// we print errors ourselves at the top level
+	SilenceErrors: true,
 }
 
 func run(cmd *cobra.Command, args []string) error {
+	// don't print usage if we've parsed the args successfully
+	cmd.SilenceUsage = true
+
 	if !verbose {
 		log.SetOutput(io.Discard)
 	}
@@ -158,6 +164,15 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Apply upgrades to fix backports or backward incompatible things
+	if changes, err := schema.ApplyCommonUpgradeTransforms(srcMap); err != nil {
+		return fmt.Errorf("failed to upgrade spec: %w", err)
+	} else if len(changes) > 0 {
+		for _, change := range changes {
+			log.Printf("Applying upgrade to specification: %s\n", change)
+		}
+	}
+	
 	// Validate SCORE spec
 	//
 	if !skipValidation {
@@ -169,7 +184,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	// Convert SCORE spec
 	//
-	var spec score.WorkloadSpec
+	var spec score.Workload
 	log.Print("Validating SCORE spec...\n")
 	if err = mapstructure.Decode(srcMap, &spec); err != nil {
 		return fmt.Errorf("validating workload spec: %w", err)
