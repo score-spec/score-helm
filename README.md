@@ -8,7 +8,7 @@ The `score.yaml` specification file can be executed against a _Score Implementat
 
 ## ![Installation](docs/images/install.svg) Installation
 
-To install `score-helm`, follow the instructions as described in our [installation guide](https://docs.score.dev/docs/get-started/install/).
+To install `score-helm`, follow the instructions as described in our [installation guide](https://docs.score.dev/docs/score-implementation/other/score-helm/#installation).
 
 ## ![Get Started](docs/images/overview.svg) Get Started
 
