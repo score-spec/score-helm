@@ -1,4 +1,5 @@
 # Check the documentation at https://goreleaser.com
+version: 2
 before:
   hooks:
     - go mod tidy
@@ -8,8 +9,6 @@ builds:
     main: ./cmd/score-helm
     ldflags:
       - -X github.com/score-spec/score-helm/internal/version.Version={{ .Version }}
-      - -X github.com/score-spec/score-helm/internal/version.BuildTime={{ .CommitDate }}
-      - -X github.com/score-spec/score-helm/internal/version.GitSHA={{ .FullCommit }}
     env:
       - CGO_ENABLED=0
     targets:
@@ -25,7 +24,7 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:
@@ -35,10 +34,21 @@ changelog:
 brews:
   - name: score-helm
     homepage: "https://score.dev"
-    tap:
+    repository:
       owner: score-spec
       name: homebrew-tap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     commit_author:
       name: rachfop
       email: prachford@icloud.com
+signs:
+  - cmd: cosign
+    signature: "${artifact}.sigstore.json"
+    args:
+      - sign-blob
+      - '--oidc-provider=github-actions'
+      - "--bundle=${signature}"
+      - '${artifact}'
+      - --yes
+    artifacts: all
+    output: true
