@@ -1,22 +1,20 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
-# https://hub.docker.com/_/golang
-FROM golang:1.19 as builder
+FROM golang:1.26-alpine@sha256:2389ebfa5b7f43eeafbd6be0c3700cc46690ef842ad962f6c5bd6be49ed82039 AS builder
 
-# https://stackoverflow.com/questions/36279253/go-compiled-binary-wont-run-in-an-alpine-docker-container-on-ubuntu-host
-ENV CGO_ENABLED=0
+ARG VERSION
 
 # Set the current working directory inside the container.
 WORKDIR /go/src/github.com/score-spec/score-helm
 
+# Copy just the module bits
+COPY go.mod go.sum ./
+RUN go mod download
+
 # Copy the entire project and build it.
 COPY . .
-RUN GOOS=linux GOARCH=amd64 go build -o /usr/local/bin/score-helm ./cmd/score-helm
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/score-spec/score-helm/internal/version.Version=${VERSION}" -o /usr/local/bin/score-helm ./cmd/score-helm
 
-# Use the official Alpine image for a lean production container.
-# https://hub.docker.com/_/alpine
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3
+# We can use gcr.io/distroless/static since we don't rely on any linux libs or state, but we need ca-certificates to connect to https/oci with the init command.
+FROM gcr.io/distroless/static:530158861eebdbbf149f7e7e67bfe45eb433a35c@sha256:5c7e2b465ac6a2a4e5f4f7f722ce43b147dabe87cb21ac6c4007ae5178a1fa58
 
 # Set the current working directory inside the container.
 WORKDIR /score-helm
