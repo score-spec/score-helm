@@ -89,23 +89,20 @@ func TestInitAndGenerate_with_sample(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "", stdout)
 	stdout, _, err = executeAndResetCommand(context.Background(), rootCmd, []string{
-		"generate", "-o", "manifests.yaml", "--", "score.yaml",
+		"generate", "-o", "values.yaml", "--", "score.yaml",
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "", stdout)
-	raw, err := os.ReadFile(filepath.Join(td, "manifests.yaml"))
+	raw, err := os.ReadFile(filepath.Join(td, "values.yaml"))
 	assert.NoError(t, err)
-	assert.Equal(t, `---
-apiVersion: score.dev/v1b1
-containers:
-    main:
-        image: stefanprodan/podinfo
-metadata:
-    name: example
+	assert.Equal(t, `containers:
+  main:
+    image:
+      name: stefanprodan/podinfo
 service:
-    ports:
-        web:
-            port: 8080
+  ports:
+    - name: web
+      port: 8080
 `, string(raw))
 
 	// check that state was persisted
@@ -151,25 +148,14 @@ resources:
 	require.NoError(t, err)
 	raw, err := os.ReadFile(filepath.Join(td, "manifests.yaml"))
 	assert.NoError(t, err)
-	assert.Equal(t, `---
-apiVersion: score.dev/v1b1
-containers:
-    main:
-        files:
-            /somefile:
-                content: |
-                    example
-                noExpand: true
-        image: stefanprodan/podinfo
-        variables:
-            dynamic: example
-            key: value
-metadata:
-    name: example
-resources:
-    thing:
-        params:
-            x: example
-        type: something
+	assert.Equal(t, `containers:
+  main:
+    env:
+      - name: dynamic
+        value: example
+      - name: key
+        value: value
+    image:
+      name: stefanprodan/podinfo
 `, string(raw))
 }

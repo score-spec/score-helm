@@ -29,13 +29,24 @@ const defaultValuesTemplate = `{{ $workloadName := .WorkloadName }}{{ $service :
       {{- end }}
     {{- end }}
 	{{- if (gt (len $container.Variables) 0) }}
-	env:
-	{{- range $variableName, $variableValue := $container.Variables }}
-	{{ $variableName }}:
-	  value: '{{ $variableValue }}'
-	{{- end }}
-	{{- end }}
+    env:
+    {{- range $variableName, $variableValue := $container.Variables }}
+      - name: {{ $variableName }}
+        value: {{ $variableValue }}
+    {{- end }}
+    {{- end }}
     image:
       name: {{ $container.Image }}
+{{- end }}
+{{- if and (ne $service nil) (gt (len $service.Ports) 0) }}
+service:
+  ports:
+  {{- range $portName, $port := $service.Ports }}
+    - name: {{ $portName }}
+      port: {{ $port.Port }}
+      {{- if ne $port.TargetPort nil }}
+      targetPort: {{ $port.TargetPort }}
+	  {{- end }}
+  {{- end }}
 {{- end }}
 `

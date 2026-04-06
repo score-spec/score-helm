@@ -70,7 +70,6 @@ var initCmd = &cobra.Command{
 			if v, _ := cmd.Flags().GetBool(initCmdFileNoSampleFlag); v {
 				slog.Info(fmt.Sprintf("Initial Score file '%s' does not exist - and sample generation is disabled", initCmdScoreFile))
 			} else {
-				
 				if !errors.Is(err, os.ErrNotExist) {
 					return fmt.Errorf("failed to check for existing Score file: %w", err)
 				}
