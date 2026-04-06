@@ -24,7 +24,7 @@ test-app: build
 	./score-helm init
 	cat score.yaml
 	./score-helm generate score.yaml
-	cat manifests.yaml
+	cat values.yaml
 
 build-container:
 	docker build -t score-helm:local .
@@ -34,4 +34,4 @@ test-container: build-container
 	docker run --rm -v .:/score-helm score-helm:local init
 	cat score.yaml
 	docker run --rm -v .:/score-helm score-helm:local generate score.yaml
-	cat manifests.yaml
+	cat values.yaml
