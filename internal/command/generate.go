@@ -115,7 +115,7 @@ var generateCmd = &cobra.Command{
 						slog.Info(fmt.Sprintf("Set container image for container '%s' to %s from --%s", containerName, v, generateCmdImageFlag))
 						workload.Containers[containerName] = container
 					} else {
-						return fmt.Errorf("failed to convert '%s' because container '%s' has no image and --image was not provided: %w", arg, containerName, err)
+						return fmt.Errorf("failed to convert '%s' because container '%s' has no image and --image was not provided", arg, containerName)
 					}
 				}
 			}
@@ -136,8 +136,6 @@ var generateCmd = &cobra.Command{
 
 		slog.Info("Primed resources", "#workloads", len(currentState.Workloads), "#resources", len(currentState.Resources))
 
-		outputManifests := make([]map[string]interface{}, 0)
-
 		if currentState, err = provisioners.ProvisionResources(currentState); err != nil {
 			return fmt.Errorf("failed to provision resources: %w", err)
 		}
@@ -148,20 +146,16 @@ var generateCmd = &cobra.Command{
 		}
 		slog.Info("Persisted state file")
 
+		out := new(bytes.Buffer)
 		for workloadName := range currentState.Workloads {
 			if manifest, err := convert.Workload(currentState, workloadName); err != nil {
 				return fmt.Errorf("failed to convert workloads: %w", err)
 			} else {
-				outputManifests = append(outputManifests, manifest)
+				out.WriteString(manifest)
 			}
 			slog.Info(fmt.Sprintf("Wrote manifest to manifests buffer for workload '%s'", workloadName))
 		}
 
-		out := new(bytes.Buffer)
-		for _, manifest := range outputManifests {
-			out.WriteString("---\n")
-			_ = yaml.NewEncoder(out).Encode(manifest)
-		}
 		v, _ := cmd.Flags().GetString(generateCmdOutputFlag)
 		if v == "" {
 			return fmt.Errorf("no output file specified")
@@ -220,9 +214,9 @@ func parseAndApplyOverrideProperty(entry string, flagName string, spec map[strin
 }
 
 func init() {
-	generateCmd.Flags().StringP(generateCmdOutputFlag, "o", "manifests.yaml", "The output manifests file to write the manifests to")
+	generateCmd.Flags().StringP(generateCmdOutputFlag, "o", "values.yaml", "The output values file to write the workloads to")
 	generateCmd.Flags().String(generateCmdOverridesFileFlag, "", "An optional file of Score overrides to merge in")
 	generateCmd.Flags().StringArray(generateCmdOverridePropertyFlag, []string{}, "An optional set of path=key overrides to set or remove")
-	generateCmd.Flags().String(generateCmdImageFlag, "", "An optional container image to use for any container with image == '.'")
+	generateCmd.Flags().StringP(generateCmdImageFlag, "i", "", "An optional container image to use for any container with image == '.'")
 	rootCmd.AddCommand(generateCmd)
 }
