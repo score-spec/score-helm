@@ -29,7 +29,8 @@ import (
 )
 
 const (
-	initCmdFileFlag = "file"
+	initCmdFileFlag         = "file"
+	initCmdFileNoSampleFlag = "no-sample"
 )
 
 var initCmd = &cobra.Command{
@@ -66,30 +67,35 @@ var initCmd = &cobra.Command{
 
 		initCmdScoreFile, _ := cmd.Flags().GetString(initCmdFileFlag)
 		if _, err := os.Stat(initCmdScoreFile); err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
-				return fmt.Errorf("failed to check for existing Score file: %w", err)
-			}
-			workload := &scoretypes.Workload{
-				ApiVersion: "score.dev/v1b1",
-				Metadata: map[string]interface{}{
-					"name": "example",
-				},
-				Containers: map[string]scoretypes.Container{
-					"main": {
-						Image: "stefanprodan/podinfo",
+			if v, _ := cmd.Flags().GetBool(initCmdFileNoSampleFlag); v {
+				slog.Info(fmt.Sprintf("Initial Score file '%s' does not exist - and sample generation is disabled", initCmdScoreFile))
+			} else {
+				
+				if !errors.Is(err, os.ErrNotExist) {
+					return fmt.Errorf("failed to check for existing Score file: %w", err)
+				}
+				workload := &scoretypes.Workload{
+					ApiVersion: "score.dev/v1b1",
+					Metadata: map[string]interface{}{
+						"name": "example",
 					},
-				},
-				Service: &scoretypes.WorkloadService{
-					Ports: map[string]scoretypes.ServicePort{
-						"web": {Port: 8080},
+					Containers: map[string]scoretypes.Container{
+						"main": {
+							Image: "stefanprodan/podinfo",
+						},
 					},
-				},
+					Service: &scoretypes.WorkloadService{
+						Ports: map[string]scoretypes.ServicePort{
+							"web": {Port: 8080},
+						},
+					},
+				}
+				rawScore, _ := yaml.Marshal(workload)
+				if err := os.WriteFile(initCmdScoreFile, rawScore, 0755); err != nil {
+					return fmt.Errorf("failed to write Score file: %w", err)
+				}
+				slog.Info("Created initial Score file", "file", initCmdScoreFile)
 			}
-			rawScore, _ := yaml.Marshal(workload)
-			if err := os.WriteFile(initCmdScoreFile, rawScore, 0755); err != nil {
-				return fmt.Errorf("failed to write Score file: %w", err)
-			}
-			slog.Info("Created initial Score file", "file", initCmdScoreFile)
 		} else {
 			slog.Info("Skipping creation of initial Score file since it already exists", "file", initCmdScoreFile)
 		}
@@ -100,5 +106,6 @@ var initCmd = &cobra.Command{
 
 func init() {
 	initCmd.Flags().StringP(initCmdFileFlag, "f", "score.yaml", "The score file to initialize")
+	initCmd.Flags().Bool(initCmdFileNoSampleFlag, false, "Disable generation of the sample score file")
 	rootCmd.AddCommand(initCmd)
 }
