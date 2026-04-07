@@ -28,15 +28,62 @@ const defaultValuesTemplate = `{{ $workloadName := .WorkloadName }}{{ $service :
       - {{ $cmd }}
       {{- end }}
     {{- end }}
-	{{- if (gt (len $container.Variables) 0) }}
+	  {{- if (gt (len $container.Variables) 0) }}
     env:
     {{- range $variableName, $variableValue := $container.Variables }}
       - name: {{ $variableName }}
-        value: {{ $variableValue }}
+        value: "{{ $variableValue }}"
     {{- end }}
     {{- end }}
     image:
       name: {{ $container.Image }}
+    {{- if (ne $container.LivenessProbe nil) }}
+    livenessProbe:
+      {{- if (ne $container.LivenessProbe.Exec nil) }}
+      exec:
+        command: {{ $container.LivenessProbe.Exec.Command }}
+      {{- else if (ne $container.LivenessProbe.HttpGet nil) }}
+      httpGet:
+        port: {{ $container.LivenessProbe.HttpGet.Port }}
+        {{- if (ne $container.LivenessProbe.HttpGet.Path "") }}
+        path: '{{ $container.LivenessProbe.HttpGet.Path }}'
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- if (ne $container.ReadinessProbe nil) }}
+    readinessProbe:
+      {{- if (ne $container.ReadinessProbe.Exec nil) }}
+      exec:
+        command: {{ $container.ReadinessProbe.Exec.Command }}
+      {{- else if (ne $container.ReadinessProbe.HttpGet nil) }}
+      httpGet:
+        port: {{ $container.ReadinessProbe.HttpGet.Port }}
+        {{- if (ne $container.ReadinessProbe.HttpGet.Path "") }}
+        path: '{{ $container.ReadinessProbe.HttpGet.Path }}'
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- if (ne $container.Resources nil) }}
+    resources:
+      {{- if (ne $container.Resources.Limits nil) }}
+      limits:
+        {{- if (ne $container.Resources.Limits.Cpu nil) }}
+        cpu: {{ $container.Resources.Limits.Cpu }}
+        {{- end }}
+        {{- if (ne $container.Resources.Limits.Memory nil) }}
+        memory: {{ $container.Resources.Limits.Memory }}
+        {{- end }}
+      {{- end }}
+      {{- if (ne $container.Resources.Requests nil) }}
+      requests:
+        {{- if (ne $container.Resources.Requests.Cpu nil) }}
+        cpu: {{ $container.Resources.Requests.Cpu }}
+        {{- end }}
+        {{- if (ne $container.Resources.Requests.Memory nil) }}
+        memory: {{ $container.Resources.Requests.Memory }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
 {{- end }}
 {{- if and (ne $service nil) (gt (len $service.Ports) 0) }}
 service:
@@ -44,9 +91,12 @@ service:
   {{- range $portName, $port := $service.Ports }}
     - name: {{ $portName }}
       port: {{ $port.Port }}
+      {{- if ne $port.Protocol nil }}
+      protocol: {{ $port.Protocol }}
+      {{- end }}
       {{- if ne $port.TargetPort nil }}
       targetPort: {{ $port.TargetPort }}
-	  {{- end }}
+      {{- end }}
   {{- end }}
 {{- end }}
 `

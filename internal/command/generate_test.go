@@ -152,9 +152,9 @@ resources:
   main:
     env:
       - name: dynamic
-        value: example
+        value: "example"
       - name: key
-        value: value
+        value: "value"
     image:
       name: stefanprodan/podinfo
 `, string(raw))
