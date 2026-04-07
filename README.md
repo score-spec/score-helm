@@ -1,77 +1,25 @@
+# score-helm
 
 ---
 
 :warning: Deprecation Notice :warning:
 
-We have deprecated the score-helm CLI implementation. To get started with Score, we recommend using one of our reference implementations [score-compose](https://github.com/score-spec/score-compose) or [score-k8s](https://github.com/score-spec/score-k8s). If you're interested in developing a score-helm reference implementation, we'd love to support you! Please reach out to us for assistance and collaboration.
+We have deprecated the `score-helm` CLI implementation. To get started with Score, we recommend using one of our reference implementations [`score-compose`](https://github.com/score-spec/score-compose) or [`score-k8s`](https://github.com/score-spec/score-k8s). If you're interested in developing a `score-helm` reference implementation, we'd love to support you! Please reach out to us for assistance and collaboration.
 
 ---
 
-![Score banner](docs/images/banner.png)
+`score-helm` is a Score implementation of the [Score specification](https://score.dev/) for [Helm](https://helm.sh/).
 
-# ![Score](docs/images/logo.svg) Score overview
+This will generate the `values.yaml` for your existing Helm chart based on the Score file.
 
-Score aims to improve developer producticity and experience by reducing the risk of configuration inconsistencies between local and remote environments. It provides developer-centric workload specification (`score.yaml`) which captures a workloads runtime requirements in a platform-agnostic manner. Learn more [here](https://github.com/score-spec/spec#-what-is-score).
+![](./docs/images/score-helm.jpg)
 
-The `score.yaml` specification file can be executed against a _Score Implementation CLI_, a conversion tool for application developers to generate environment specific configuration. In combination with environment specific parameters, the CLI tool can run your workload in the target environment by generating a platform-specific configuration file. The `score-helm` CLI is a reference implementation used to generate `values.yaml` files for your Helm chart.
-
-## ![Installation](docs/images/install.svg) Installation
-
-To install `score-helm`, follow the instructions as described in our [installation guide](https://docs.score.dev/docs/score-implementation/other/score-helm/#installation).
-
-## ![Get Started](docs/images/overview.svg) Get Started
-
-If you already have a `score.yaml` file defined, you can simply run the following command:
+- [CLI](./docs/cli.md)
 
 ```bash
-# Prepare a new Helm values file
-score-helm run -f ./score.yaml -o ./values.yaml
+score-helm init
+
+score-helm generate score.yaml -o values.yaml
+
+helm upgrade --install --values values.yaml ...
 ```
-
-- `run` tells the CLI to translate the Score file to a Helm `values.yaml` file.
-- `-f` is the path to the Score file.
-- `--env` specifies the path to the `values.yaml` file.
-
-If you're just getting started, follow [this guide](https://docs.score.dev/docs/get-started/score-helm-hello-world/) to run your first Hello World program with `score-helm`.
-
-## ![Get involved](docs/images/get-involved.svg) Get involved
-
-- Give the project a star!
-- Contact us via email:
-  - team@score.dev
-  - abuse@score.dev
-- See our [documentation](https://docs.score.dev)
-
-## ![Contributing](docs/images/contributing.svg) Contributing
-
-- Write a [blog post](https://score.dev/blog)
-- Provide feedback on our [roadmap](https://github.com/score-spec/spec/blob/main/roadmap.md#get-involved)
-- Contribute
-
-Contributions are what make the open-source community such a wonderful place to learn, inspire, and create. Any contributions you make are greatly appreciated.
-
-If you have a suggestion that would improve this, please fork the repo and create a pull request. You can also open an issue with the tag `enhancement`.
-
-1. Fork the Project.
-2. Create your Feature Branch. `git checkout -b feature/feature-name`
-3. Commit your Changes. `git commit -s -m "Add some AmazingFeature"`
-4. Push to the Branch. `git push origin feature/feature-name`
-5. Open a Pull Request.
-
-Read [CONTRIBUTING](CONTRIBUTING.md) for more information.
-
-### Documentation
-
-You can find our documentation at [docs.score.dev](https://docs.score.dev/docs).
-
-### Roadmap
-
-See [Roadmap](https://github.com/score-spec/spec/blob/main/roadmap.md). You can [submit an idea](https://github.com/score-spec/spec/blob/main/roadmap.md#get-involved) anytime.
-
-### License
-
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-### Code of conduct
-
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)

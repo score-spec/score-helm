@@ -1,0 +1,29 @@
+apiVersion: score.dev/v1b1
+metadata:
+  name: example
+containers:
+  main:
+    image: stefanprodan/podinfo
+    command:
+      - "node"
+    args:
+      - packages/backend
+      - "--config"
+      - app-config.yaml
+    variables:
+      key: value
+      dynamic: ${metadata.name}
+    files:
+      /somefile:
+        content: |
+          ${metadata.name}
+service:
+  ports:
+    tcp:
+      port: 8080
+      targetPort: 8080
+resources:
+  thing:
+    type: something
+    params:
+      x: ${metadata.name}
