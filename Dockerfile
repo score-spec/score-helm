@@ -1,6 +1,6 @@
-FROM golang:1.26-alpine@sha256:c2a1f7b2095d046ae14b286b18413a05bb82c9bca9b25fe7ff5efef0f0826166 AS builder
+FROM --platform=$BUILDPLATFORM dhi.io/golang:1.26.1-alpine3.23-dev@sha256:fed0e3e2b4ca2502dc31c9dd7602539f08c4ac5216ae00bcbf56a64a0a8fcfca AS builder
 
-ARG VERSION
+ARG VERSION=0.0.0
 
 # Set the current working directory inside the container.
 WORKDIR /go/src/github.com/score-spec/score-helm
@@ -11,10 +11,10 @@ RUN go mod download
 
 # Copy the entire project and build it.
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/score-spec/score-helm/internal/version.Version=${VERSION}" -o /usr/local/bin/score-helm ./cmd/score-helm
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X github.com/score-spec/score-helm/internal/version.Version=${VERSION}" -o /usr/local/bin/score-helm ./cmd/score-helm
 
-# We can use gcr.io/distroless/static since we don't rely on any linux libs or state, but we need ca-certificates to connect to https/oci with the init command.
-FROM gcr.io/distroless/static:530158861eebdbbf149f7e7e67bfe45eb433a35c@sha256:5c7e2b465ac6a2a4e5f4f7f722ce43b147dabe87cb21ac6c4007ae5178a1fa58
+# We can use static since we don't rely on any linux libs or state, but we need ca-certificates to connect to https/oci with the init command.
+FROM dhi.io/static:20251003-alpine3.23@sha256:a08d9a53a4758b4006d56341aa88b1edf583ddebd93e620a32acd5135535573c
 
 # Set the current working directory inside the container.
 WORKDIR /score-helm
