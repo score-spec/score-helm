@@ -1,0 +1,71 @@
+name: release
+on:
+  push:
+    tags:
+      - v**
+permissions:
+  contents: read
+jobs:
+  release-go-binary:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Fetch all tags
+        run: git fetch --force --tags
+      - name: Set up Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version-file: 'go.mod'
+      - name: test
+        run: go run gotest.tools/gotestsum@latest --format github-actions
+      - name: lint
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
+        with:
+          version: latest
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7.0.0
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+  release-container-image:
+    uses: docker/github-builder/.github/workflows/build.yml@2497a7d1e7d8683af4949c9d6d62012bc16ed59c # v1.5.0
+    permissions:
+      id-token: write # to sign attestation(s) with GitHub OIDC Token
+      packages: write # to push container image to ghcr
+    with:
+      output: image
+      push: true
+      platforms: linux/amd64,linux/arm64
+      sbom: true
+      cache: true
+      context: .
+      set-meta-labels: true
+      set-meta-annotations: true
+      build-args: |
+        "VERSION=${{ github.ref_name }}"
+      meta-images: |
+        ghcr.io/score-spec/score-helm
+        scorespec/score-helm
+      meta-tags: |
+        type=ref,event=tag
+        latest
+    secrets:
+      registry-auths: |
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        - username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_RELEASE_TOKEN }}
