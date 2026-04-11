@@ -41,6 +41,20 @@ func TestInitNominal(t *testing.T) {
 	assert.Equal(t, "", stdout)
 	assert.NotEqual(t, "", strings.TrimSpace(stderr))
 
+	raw, err := os.ReadFile("score.yaml")
+	require.NoError(t, err)
+	assert.Equal(t, `apiVersion: score.dev/v1b1
+containers:
+  main:
+    image: stefanprodan/podinfo
+metadata:
+  name: example
+service:
+  ports:
+    web:
+      port: 8080
+`, string(raw))
+
 	stdout, stderr, err = executeAndResetCommand(context.Background(), rootCmd, []string{"generate", "score.yaml"})
 	assert.NoError(t, err)
 	assert.Equal(t, ``, stdout)
