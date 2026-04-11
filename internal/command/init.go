@@ -93,8 +93,12 @@ var initCmd = &cobra.Command{
 				var rawScore bytes.Buffer
 				scoreEnc := yaml.NewEncoder(&rawScore)
 				scoreEnc.SetIndent(2)
-				_ = scoreEnc.Encode(workload)
-				_ = scoreEnc.Close()
+				if err := scoreEnc.Encode(workload); err != nil {
+					return fmt.Errorf("failed to encode Score file: %w", err)
+				}
+				if err := scoreEnc.Close(); err != nil {
+					return fmt.Errorf("failed to encode Score file: %w", err)
+				}
 				if err := os.WriteFile(initCmdScoreFile, rawScore.Bytes(), 0755); err != nil {
 					return fmt.Errorf("failed to write Score file: %w", err)
 				}
