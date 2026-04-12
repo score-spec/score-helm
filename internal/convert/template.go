@@ -28,7 +28,7 @@ const defaultValuesTemplate = `{{ $workloadName := .WorkloadName }}{{ $service :
       - {{ $cmd }}
       {{- end }}
     {{- end }}
-	  {{- if (gt (len $container.Variables) 0) }}
+    {{- if (gt (len $container.Variables) 0) }}
     env:
     {{- range $variableName, $variableValue := $container.Variables }}
       - name: {{ $variableName }}
