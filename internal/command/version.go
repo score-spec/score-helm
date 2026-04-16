@@ -49,7 +49,7 @@ const (
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Show the version for " + ScoreImplementationName + " and new version to update if available.",
+	Short: "Show the version for " + ScoreImplementationName + " and check for a new version if available.",
 	Args:  cobra.NoArgs,
 	CompletionOptions: cobra.CompletionOptions{
 		HiddenDefaultCmd: true,
