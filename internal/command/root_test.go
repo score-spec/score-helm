@@ -17,6 +17,7 @@ package command
 import (
 	"bytes"
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -64,5 +65,13 @@ func TestRootUnknown(t *testing.T) {
 	stdout, stderr, err := executeAndResetCommand(context.Background(), rootCmd, []string{"unknown"})
 	assert.EqualError(t, err, "unknown command \"unknown\" for \"score-helm\"")
 	assert.Equal(t, "", stdout)
+	assert.Equal(t, "", stderr)
+}
+
+func TestRootVersion(t *testing.T) {
+	stdout, stderr, err := executeAndResetCommand(context.Background(), rootCmd, []string{"--version"})
+	assert.NoError(t, err)
+	pattern := regexp.MustCompile(`^score-helm unknown \(go\S+ - \S+/\S+\)\ngit commit: \S+\nbuild date: \S+\n$`)
+	assert.Truef(t, pattern.MatchString(stdout), "%s does not match: '%s'", pattern.String(), stdout)
 	assert.Equal(t, "", stderr)
 }

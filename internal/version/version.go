@@ -16,30 +16,16 @@ package version
 
 import (
 	"fmt"
-	"runtime/debug"
+	"runtime"
 )
 
-var Version = "unknown"
+var (
+	Version   string = "unknown"
+	GitCommit string = "unknown"
+	BuildDate string = "unknown"
+)
 
 // BuildVersionString constructs a version string by looking at the build metadata injected at build time.
 func BuildVersionString() string {
-	versionNumber, buildTime, gitSha, isDirtySuffix := Version, "local", "unknown", ""
-	if info, ok := debug.ReadBuildInfo(); ok {
-		if Version == "unknown" || Version == "" {
-			versionNumber = info.Main.Version
-		}
-		for _, setting := range info.Settings {
-			switch setting.Key {
-			case "vcs.time":
-				buildTime = setting.Value
-			case "vcs.revision":
-				gitSha = setting.Value
-			case "vcs.modified":
-				if setting.Value == "true" {
-					isDirtySuffix = "+dirty"
-				}
-			}
-		}
-	}
-	return fmt.Sprintf("%s (build: %s, sha: %s%s)", versionNumber, buildTime, gitSha, isDirtySuffix)
+	return fmt.Sprintf("%s (%s - %s/%s)\ngit commit: %s\nbuild date: %s", Version, runtime.Version(), runtime.GOOS, runtime.GOARCH, GitCommit, BuildDate)
 }

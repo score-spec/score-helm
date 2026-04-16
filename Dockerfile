@@ -1,6 +1,8 @@
 FROM --platform=$BUILDPLATFORM dhi.io/golang:1.26.1-alpine3.23-dev@sha256:fed0e3e2b4ca2502dc31c9dd7602539f08c4ac5216ae00bcbf56a64a0a8fcfca AS builder
 
 ARG VERSION=0.0.0
+ARG GIT_COMMIT=unknown
+ARG BUILD_DATE=unknown
 
 # Set the current working directory inside the container.
 WORKDIR /go/src/github.com/score-spec/score-helm
@@ -11,7 +13,12 @@ RUN go mod download
 
 # Copy the entire project and build it.
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X github.com/score-spec/score-helm/internal/version.Version=${VERSION}" -o /usr/local/bin/score-helm ./cmd/score-helm
+RUN CGO_ENABLED=0 GOOS=linux \
+    go build -ldflags="-s -w \
+        -X github.com/score-spec/score-helm/internal/version.Version=${VERSION} \
+        -X github.com/score-spec/score-helm/internal/version.GitCommit=${GIT_COMMIT} \
+        -X github.com/score-spec/score-helm/internal/version.BuildDate=${BUILD_DATE}" \
+    -o /usr/local/bin/score-helm ./cmd/score-helm
 
 # We can use static since we don't rely on any linux libs or state, but we need ca-certificates to connect to https/oci with the init command.
 FROM dhi.io/static:20251003-alpine3.23@sha256:a08d9a53a4758b4006d56341aa88b1edf583ddebd93e620a32acd5135535573c
