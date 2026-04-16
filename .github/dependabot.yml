@@ -26,6 +26,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    registries:
+    - dhi
     groups:
       ci:
         patterns:
