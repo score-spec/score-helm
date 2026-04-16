@@ -9,6 +9,8 @@ builds:
     main: ./cmd/score-helm
     ldflags:
       - -X github.com/score-spec/score-helm/internal/version.Version={{ .Version }}
+      - -X github.com/score-spec/score-helm/internal/version.GitCommit={{ .Commit }}
+      - -X github.com/score-spec/score-helm/internal/version.BuildDate={{ .Date }}
     env:
       - CGO_ENABLED=0
     targets:
