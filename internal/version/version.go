@@ -40,6 +40,7 @@ func semverToI(x string) (int, error) {
 		return 0, fmt.Errorf("invalid version: %s", x)
 	}
 	major, _ := strconv.Atoi(cpm[1])
+	// 999 represents a missing/unspecified component treated as "any" for comparison purposes.
 	minor, patch := 999, 999
 	if len(cpm) > 2 {
 		minor, _ = strconv.Atoi(cpm[2])
@@ -70,7 +71,8 @@ func AssertVersion(constraint string, current string) error {
 			match = currentI > compareI
 		case ">=":
 			match = currentI >= compareI
-		case "=":
+		default:
+			// "=" or no operator defaults to exact match
 			match = currentI == compareI
 		}
 		if !match {
