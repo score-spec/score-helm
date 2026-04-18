@@ -18,3 +18,14 @@ Run the conversion from Score file to output manifests.
 - `--output`|`-o` - The output manifests file to write the manifests to (default `value.yaml`).
 - `--override-property` - An optional set of path=key overrides to set or remove.
 - `--overrides-file` - `An optional file of Score overrides to merge in.
+
+## `score-helm version`
+
+Show the version for `score-helm` and new version to update if available.
+
+- `--no-logo` - Do not show the Score logo.
+- `--no-updates-check` - Do not check for a new version.
+
+## `score-helm check-version`
+
+Assert that the version of `score-helm` matches the required constraint.
