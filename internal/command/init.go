@@ -15,16 +15,13 @@
 package command
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 
 	"github.com/score-spec/score-go/framework"
-	scoretypes "github.com/score-spec/score-go/types"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 
 	"github.com/score-spec/score-helm/internal/state"
 )
@@ -32,6 +29,37 @@ import (
 const (
 	initCmdFileFlag         = "file"
 	initCmdFileNoSampleFlag = "no-sample"
+
+	DefaultScoreFileContent = `# Score provides a developer-centric and platform-agnostic
+# Workload specification to improve developer productivity and experience.
+# Score eliminates configuration management between local and remote environments.
+#
+# Get started with Score: https://docs.score.dev/docs/get-started/.
+---
+apiVersion: score.dev/v1b1
+metadata:
+  name: hello-world
+  annotations:
+    tags: "nodejs,http,website,javascript,postgres"
+containers:
+  hello-world:
+    image: scorespec/sample-score-app:latest
+    variables:
+      PORT: "3000"
+      MESSAGE: "Hello, World!"
+resources:
+  db:
+    type: postgres
+  dns:
+    type: dns
+  route:
+    type: route
+service:
+  ports:
+    www:
+      port: 8080
+      targetPort: 3000
+`
 )
 
 var initCmd = &cobra.Command{
@@ -74,32 +102,7 @@ var initCmd = &cobra.Command{
 				if !errors.Is(err, os.ErrNotExist) {
 					return fmt.Errorf("failed to check for existing Score file: %w", err)
 				}
-				workload := &scoretypes.Workload{
-					ApiVersion: "score.dev/v1b1",
-					Metadata: map[string]interface{}{
-						"name": "example",
-					},
-					Containers: map[string]scoretypes.Container{
-						"main": {
-							Image: "stefanprodan/podinfo",
-						},
-					},
-					Service: &scoretypes.WorkloadService{
-						Ports: map[string]scoretypes.ServicePort{
-							"web": {Port: 8080},
-						},
-					},
-				}
-				var rawScore bytes.Buffer
-				scoreEnc := yaml.NewEncoder(&rawScore)
-				scoreEnc.SetIndent(2)
-				if err := scoreEnc.Encode(workload); err != nil {
-					return fmt.Errorf("failed to encode Score file: %w", err)
-				}
-				if err := scoreEnc.Close(); err != nil {
-					return fmt.Errorf("failed to encode Score file: %w", err)
-				}
-				if err := os.WriteFile(initCmdScoreFile, rawScore.Bytes(), 0755); err != nil {
+				if err := os.WriteFile(initCmdScoreFile, []byte(DefaultScoreFileContent), 0755); err != nil {
 					return fmt.Errorf("failed to write Score file: %w", err)
 				}
 				slog.Info("Created initial Score file", "file", initCmdScoreFile)
