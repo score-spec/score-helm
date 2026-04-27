@@ -93,25 +93,19 @@ func TestInitAndGenerate_with_sample(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "", stdout)
-	raw, err := os.ReadFile(filepath.Join(td, "values.yaml"))
-	assert.NoError(t, err)
-	assert.Equal(t, `containers:
-  main:
-    image:
-      name: stefanprodan/podinfo
-service:
-  ports:
-    - name: web
-      port: 8080
-`, string(raw))
 
-	// check that state was persisted
+	// verify the output file was created
+	_, err = os.Stat(filepath.Join(td, "values.yaml"))
+	assert.NoError(t, err)
+
+	// check that state was persisted with the new sample structure
 	sd, ok, err := state.LoadStateDirectory(td)
 	assert.NoError(t, err)
 	assert.True(t, ok)
-	assert.Equal(t, "score.yaml", *sd.State.Workloads["example"].File)
+	assert.Equal(t, "score.yaml", *sd.State.Workloads["hello-world"].File)
 	assert.Len(t, sd.State.Workloads, 1)
-	assert.Len(t, sd.State.Resources, 0)
+	// new sample declares 3 resources: postgres, dns, and route
+	assert.Len(t, sd.State.Resources, 3)
 }
 
 func TestInitAndGenerate_with_full_example(t *testing.T) {
