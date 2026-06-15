@@ -2,7 +2,7 @@ module github.com/score-spec/score-helm
 
 go 1.26
 
-toolchain go1.26.2
+toolchain go1.26.4
 
 require (
 	dario.cat/mergo v1.0.2
@@ -16,7 +16,7 @@ require (
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.4.0 // indirect
+	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -29,6 +29,6 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
