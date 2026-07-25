@@ -44,8 +44,10 @@ jobs:
       - name: Check licenses
         run: addlicense -l apache -check -v -ignore '**/*.yaml' -c 'The Score Authors' ./cmd ./internal/
   test-multi-arch-build:
-    uses: docker/github-builder/.github/workflows/build.yml@3415a188caae9a0da7fba83bc06985776e0b1790 # v1.14.0
+    uses: docker/github-builder/.github/workflows/build.yml@27ade872c1e2296e62ef15ab3b10d37665e57cf7 # main
     if: ${{ !github.event.pull_request.head.repo.fork }}
+    permissions:
+      id-token: write # required to request the GitHub OIDC token
     with:
       output: image
       push: false
@@ -59,15 +61,17 @@ jobs:
         score-helm
       meta-tags: |
         type=ref,event=pr
-    secrets:
-      registry-auths: |
-        - username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      registry-identities: |
+        - type: dockerhub
+          registry: docker.io
+          username: ${{ vars.DOCKER_HUB_ORG }}
+          connection_id: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
   test-container:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.head.repo.fork }}
     permissions:
       pull-requests: write
+      id-token: write # required to request the GitHub OIDC token
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -91,17 +95,15 @@ jobs:
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
         with:
           version: latest
-      - name: docker login docker.io
-        uses: docker/login-action@06fb636fac595d6fb4b28a5dfcb21a6f5091859c # v4.5.0
+      - name: docker login
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4.5.1
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKER_HUB_OIDC_CONNECTION_ID }}
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      - name: docker login dhi.io
-        uses: docker/login-action@06fb636fac595d6fb4b28a5dfcb21a6f5091859c # v4.5.0
-        with:
-          registry: dhi.io
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          registry-auth: |
+            - username: ${{ vars.DOCKER_HUB_ORG }}
+            - registry: dhi.io
+              username: ${{ vars.DOCKER_HUB_ORG }}
       - name: Build container image from PR branch
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
