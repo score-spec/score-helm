@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM dhi.io/golang:1.27.3-alpine3.24-dev@sha256:d8099d992fae99616f09a95645a628de87e6d7883a2042a1f3200c536db8d091 AS builder
+FROM --platform=$BUILDPLATFORM dhi.io/golang:1.27.4-alpine3.24-dev@sha256:72cac473a0b802b521e23a2aed591ad166645729533d6d3db4ce96ae22c697ff AS builder
 
 ARG VERSION=0.0.0
 ARG GIT_COMMIT=unknown
@@ -21,7 +21,7 @@ RUN CGO_ENABLED=0 GOOS=linux \
     -o /usr/local/bin/score-helm ./cmd/score-helm
 
 # We can use static since we don't rely on any linux libs or state, but we need ca-certificates to connect to https/oci with the init command.
-FROM dhi.io/static:20261020-alpine3.24@sha256:c78b2c2034b3fb2f83a337b6353c3ef27d910a828d9127ff342014e7b225c04e
+FROM dhi.io/static:20261020-alpine3.24@sha256:4767f889704f46bbf9b83bd0225e0e868ae0cb45ddc5627350ecf1449a019721
 
 # Set the current working directory inside the container.
 WORKDIR /score-helm
